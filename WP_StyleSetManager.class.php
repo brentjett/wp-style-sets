@@ -8,9 +8,12 @@ if ( file_exists( __DIR__ . '/vendor/leafo/scss/scss.inc.php' ) ) {
     require_once( __DIR__ . '/vendor/leafo/scss/scss.inc.php' );
 }
 
+require_once 'WP_StyleSet.class.php';
+
 class WP_StyleSetManager {
 
-    public $style_sets = array();
+    public $sets = array();
+    public $units = array();
 
     function __construct() {
 
@@ -33,10 +36,21 @@ class WP_StyleSetManager {
     - contributor: array('handle' => 'basset', 'type' => 'theme')
 
     */
-    public function register_styleset($handle, $args = array()) {
-        global $wp_style_sets;
+    public function register_set($handle, $args = array()) {
 
-        $wp_style_sets[$handle] = $args;
+        $set = new WP_StyleSet();
+        $set->manager = $this;
+        $set->handle = $handle;
+        $set->name = $args['name'];
+        $set->vars = $args['vars'];
+        // deal with args
+
+        $this->sets[$handle] = $set;
+        return $set;
+    }
+
+    public function get_set($handle) {
+        return $this->sets[$handle];
     }
 
     // add item to set
@@ -50,20 +64,12 @@ class WP_StyleSetManager {
     - vars? : an array of vars to use at compile - might override any vars of same name defined in Set
     - is_library: Declare that a unit is a library of vars and mixins. DOES NOT PRINT ANYTHING
     */
-    public function add_style_unit_to_set($unit, $set) {
+    public function register_unit($unit, $set) {
         global $wp_style_sets;
 
         $wp_style_sets[$set] = $unit;
     }
-
-    // render set
-    public function render_styleset($handle) {
-        /*
-        $units = $wp_style_sets[$handle]->units();
-        $units = apply_filters('wp_stylesets/pre_render/units', $units);
-        // returns css? or if file type, url to cached file?
-        */
-    }
-
 }
+
+
 ?>

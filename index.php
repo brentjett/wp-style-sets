@@ -11,6 +11,7 @@ require_once 'WP_StyleSetManager.class.php';
 add_action('init', function() {
     if (class_exists('WP_StyleSetManager')) {
         $manager = new WP_StyleSetManager();
+        $GLOBALS['wp_style_set_manager'] = $manager;
     }
     do_action('wp_stylesets/register', $manager);
 });
@@ -41,16 +42,37 @@ function test_return_array_css() {
 
 add_action('wp_stylesets/register', function($manager) {
 
-    $set = $manager->register_styleset('my-first-styleset', args(
-        'name' => 'My First Styleset'
+    /*
+    Style Set
+    - handle: basset-content
+    - name: Basset Content
+    - type is inferred from units
+    - units: array of unitsn
+    - vars: default vars it pass to each compile cycle. These are overridden by unit vars of same name.
+    - functions: array of PHP functions to register to the compilers.
+    - import_dirs: array of paths to look for files to import. Default to active theme root.
+    - contributor: array('handle' => 'basset', 'type' => 'theme') - assume plugin, maybe go look for the handle in dirs.
+
+    */
+    $set = $manager->register_set('my-first-styleset', array(
+        'name' => 'My First Styleset',
+        'vars' => array(
+            'main_color' => 'blue'
+        ),
+        'contributor' => array('handle' => 'wp-style-sets'),
+        'render_as' => 'file'
     ));
+
+    print_r($set);
 
 });
 
 add_filter('the_content', function($content) {
+    global $wp_style_set_manager;
     ob_start();
 
-
+    $set = $wp_style_set_manager->get_set('my-first-set');
+    print_r($set);
 
     $content = ob_get_clean();
     return $content;

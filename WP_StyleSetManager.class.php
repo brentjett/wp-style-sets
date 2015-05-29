@@ -48,6 +48,7 @@ class WP_StyleSetManager {
     - contributor : array('handle' => 'basset', 'type' => 'theme')
     - source : path/to/file.less OR function_to_return_less()
     - vars? : an array of vars to use at compile - might override any vars of same name defined in Set
+    - is_library: Declare that a unit is a library of vars and mixins. DOES NOT PRINT ANYTHING
     */
     public function add_style_unit_to_set($unit, $set) {
         global $wp_style_sets;
@@ -57,9 +58,11 @@ class WP_StyleSetManager {
 
     // render set
     public function render_styleset($handle) {
-        $units = $wp_style_sets
+        /*
+        $units = $wp_style_sets[$handle]->units();
         $units = apply_filters('wp_stylesets/pre_render/units', $units);
         // returns css? or if file type, url to cached file?
+        */
     }
 
 }

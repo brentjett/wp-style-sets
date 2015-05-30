@@ -1,10 +1,11 @@
 <?php
 /*
-Plugin Name: WP Style Sets
+Plugin Name: WP Style Sets API
 Version: 0.1
 Author: Brent Jett
 Description: A concept plugin for creating a set of styles to be compiled and output as either a file or <style> block.
 */
+define('WP_STYLE_SETS_PLUGIN_ACTIVE', true);
 
 require_once 'WP_StyleSetManager.class.php';
 

@@ -39,6 +39,25 @@ add_action('wp_enqueue_scripts', function() {
 
 });
 
+// TESTING: Add inspector content before page content
+add_filter('the_content', function($content) {
+    global $wp_style_set_manager;
+    $sets = $wp_style_set_manager->sets();
+    if (!empty($sets) ) {
+        foreach($sets as $handle => $set) {
+            $set->inspect();
+        }
+    }
+
+    ob_start();
+
+
+
+    return ob_get_clean() . $content;
+});
+
+
+
 function my_test_function() {
     ob_start();
     ?>

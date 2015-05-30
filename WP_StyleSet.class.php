@@ -64,7 +64,8 @@ class WP_StyleSet {
 
                 // Compile
                 $lang = $unit->lang;
-                $unit->compiled_css .= apply_filters("wp_stylesets/compile/{$lang}", $unit->raw_css, $unit, $set_vars );
+                $vars = array('test_var' => 'TEST VAR');
+                $unit->compiled_css .= apply_filters("wp_stylesets/compile/{$lang}", $unit->raw_css, $vars, $unit );
                 $css .= $unit->compiled_css;
             }
         }
@@ -74,11 +75,11 @@ class WP_StyleSet {
 
 
 
-    public function compile_css_unit($raw_css, $unit, $set_vars) {
+    public function compile_css_unit($raw_css, $vars, $unit) {
         return $raw_css;
     }
 
-    public function compile_less_unit($raw_css, $unit, $set_vars) {
+    public function compile_less_unit($raw_css, $vars, $unit) {
         // Load LESS Compiler
         if ( file_exists( __DIR__ . '/vendor/leafo/lessphp/lessc.inc.php' ) ) {
             require_once( __DIR__ . '/vendor/leafo/lessphp/lessc.inc.php' );
@@ -87,13 +88,28 @@ class WP_StyleSet {
         return $less->compile($raw_css);
     }
 
-    public function compile_scss_unit($raw_css, $unit, $set_vars) {
+    public function compile_scss_unit($raw_css, $vars, $unit) {
         // Load SASS Compiler
         if ( file_exists( __DIR__ . '/vendor/leafo/scssphp/scss.inc.php' ) ) {
             require_once( __DIR__ . '/vendor/leafo/scssphp/scss.inc.php' );
         }
+
         $scss = new scssc();
+        $scss->setVariables($vars);
         return $scss->compile($raw_css);
+    }
+
+    /* Print HTML inspector view - Needs Work */
+    public function inspect() {
+        ?>
+        <div class="set-inspector" style="padding:20px; border:1px solid red;">
+            <h1 style="margin-top:0px;"><?php print $this->name ?></h1>
+            <?php foreach($this->units as $handle => $unit) { ?>
+                <div><?=$unit->handle ?></div>
+                <div><?=$unit->name ?> - <?=$unit->lang ?></div>
+            <?php } ?>
+        </div>
+        <?
     }
 
 }

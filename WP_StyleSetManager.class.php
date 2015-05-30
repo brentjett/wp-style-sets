@@ -13,7 +13,7 @@ class WP_StyleSetManager {
     }
 
     public function sets() {
-        return apply_filters('wp_stylesets/pre_get', $this->style_sets);
+        return apply_filters('wp_stylesets/pre_get', $this->sets);
     }
 
     // add new set

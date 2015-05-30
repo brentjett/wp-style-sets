@@ -8,6 +8,9 @@ Description: A concept plugin for creating a set of styles to be compiled and ou
 
 require_once 'WP_StyleSetManager.class.php';
 
+// Import test script
+require_once 'test-files/tests.php';
+
 // Setup manager object
 add_action('init', function() {
     if (class_exists('WP_StyleSetManager')) {
@@ -28,7 +31,7 @@ add_action('wp_print_styles', function() {
             }
         }
     }
-});
+}, 100);
 
 // On wp_head - render sets that are <style> block sets and are enqueued
 // On wp_enqueue_scripts - render sets that are files and are enqueued
@@ -80,51 +83,5 @@ function wp_add_style_to_set($handle, $set_handle, $args = array()) {
         $set->add_unit($unit);
     }
     return $unit;
-}
-
-add_action('wp_enqueue_scripts', function() {
-
-    // wp_register_style( $handle, $src, $deps = array(), $ver = false, $media = 'all' );
-    //  wp_enqueue_style( $handle, $src = false, $deps = array(), $ver = false, $media = 'all' );
-
-    wp_enqueue_style_set("basset-content-set", array(
-        'name' => 'Basset Content Styles',
-        'units' => array(
-            'basset-vars' => array(
-                'name' => 'Basset Variables',
-                'lang' => 'css',
-                'source' => 'my_test_function'
-            ),
-            'basset-tests' => array(
-                'name' => 'Basset Variables',
-                'lang' => 'css',
-                'source' => function() {
-                    return "body { background:#333; } p {text-align:center;}";
-                }
-            ),
-            'test-file' => array(
-                'name' => 'Test File',
-                'lang' => 'css',
-                'source' => __DIR__ . '/test-files/test.css'
-            )
-        ),
-        'vars' => array(
-            'primary_color' => 'white',
-            'primary_background_color' => 'navy'
-        )
-    ));
-
-});
-
-function my_test_function() {
-    ob_start();
-    ?>
-    main {
-        color:red;
-        background:yellow;
-        font-style:italic;
-    }
-    <?
-    return ob_get_clean();
 }
 ?>

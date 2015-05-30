@@ -1,38 +1,48 @@
 <?php
 
-add_filter('the_content', function($content) {
-    global $wp_style_set_manager;
-    ob_start();
+add_action('wp_enqueue_scripts', function() {
 
-    $set = $wp_style_set_manager->get_set('my-first-set');
+    // wp_register_style( $handle, $src, $deps = array(), $ver = false, $media = 'all' );
+    //  wp_enqueue_style( $handle, $src = false, $deps = array(), $ver = false, $media = 'all' );
 
-    $unitA = new WP_StyleUnit(array(
-        'handle' => 'basset-vars',
-        'name' => 'Basset Variables',
-        'lang' => 'css',
-        'source' => function() {
-            return 'body { background:yellow; }';
-        }
+    wp_enqueue_style_set("basset-content-set", array(
+        'name' => 'Basset Content Styles',
+        'units' => array(
+            'basset-vars' => array(
+                'name' => 'Basset Variables',
+                'lang' => 'css',
+                'source' => 'my_test_function'
+            ),
+            'basset-tests' => array(
+                'name' => 'Basset Variables',
+                'lang' => 'css',
+                'source' => function() {
+                    return "body { background:#333; } p {text-align:center;}";
+                }
+            ),
+            'test-file' => array(
+                'name' => 'Test File',
+                'lang' => 'css',
+                'source' => __DIR__ . '/test-files/test.css'
+            )
+        ),
+        'vars' => array(
+            'primary_color' => 'white',
+            'primary_background_color' => 'navy'
+        )
     ));
-    $set->addUnit($unitA);
 
-    $unitB = new WP_StyleUnit(array(
-        'handle' => 'test-two',
-        'name' => 'Test Two',
-        'lang' => 'less',
-        'source' => function() {
-            return '@color:red; body { background:@color; }';
-        }
-    ));
-    $set->addUnit($unitB);
-
-    $css = $set->render();
-
-    print "<pre>$css</pre>";
-
-    print "<style>$css</style>";
-
-    $content = ob_get_clean();
-    return $content;
 });
+
+function my_test_function() {
+    ob_start();
+    ?>
+    main {
+        color:red;
+        background:yellow;
+        font-style:italic;
+    }
+    <?
+    return ob_get_clean();
+}
 ?>

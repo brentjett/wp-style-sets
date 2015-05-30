@@ -57,11 +57,10 @@ class WP_StyleSet {
 
                 $lang = $unit->lang;
                 if (is_callable($unit->source)) {
-                    return call_user_func($unit->source);
+                    $css .= call_user_func($unit->source);
                 } else {
-                    print_r($unit->source);
                     if (file_exists($unit->source)) {
-                        return file_get_contents($unit->source);
+                        $css .= file_get_contents($unit->source);
                     }
                 }
 

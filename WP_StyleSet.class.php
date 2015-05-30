@@ -74,12 +74,11 @@ class WP_StyleSet {
     public function compile_css_unit($unit, $set_vars) {
 
         $css = "\n\n/* Style Unit: $unit->handle/$unit->name */\n";
-        
+
         if (is_callable($unit->source)) {
             $css .= call_user_func($unit->source);
         } else {
             if (file_exists($unit->source)) {
-
                 $css .= file_get_contents($unit->source);
             }
         }

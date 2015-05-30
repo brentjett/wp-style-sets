@@ -8,74 +8,123 @@ Description: A concept plugin for creating a set of styles to be compiled and ou
 
 require_once 'WP_StyleSetManager.class.php';
 
+// Setup manager object
 add_action('init', function() {
     if (class_exists('WP_StyleSetManager')) {
         $manager = new WP_StyleSetManager();
         $GLOBALS['wp_style_set_manager'] = $manager;
     }
-    do_action('wp_stylesets/register', $manager);
 });
 
-// On wp_head - render sets that are <style> block sets and are ENQUEUED
-// On wp_enqueue_scripts - render sets that are files and are ENQUEUED
+// Print enqueued <style> blocks
+add_action('wp_print_styles', function() {
+    global $wp_style_set_manager;
+
+    $sets = $wp_style_set_manager->sets;
+    foreach($sets as $set) {
+        if ($set->is_enqueued && ($set->render_as == 'embed')) {
+            if ($css = $set->render()) {
+                print "\n\n<style id='$set->handle'>\n$css\n</style>\n\n";
+            }
+        }
+    }
+});
+
+// On wp_head - render sets that are <style> block sets and are enqueued
+// On wp_enqueue_scripts - render sets that are files and are enqueued
+// On wp_print_styles - render sets that are embed <style> blocks that are enqueued
 // on mc_css - render sets that are marked for editor include
 // admin_enqueue_scripts support?
 
-// TESTING Script
 
-function test_print_some_css() {
-    ?>
-    body {
-        background:red;
+
+function wp_register_style_set($handle, $args = array()) {
+    global $wp_style_set_manager;
+
+    $args['handle'] = $handle;
+    $set = new WP_StyleSet($args);
+    $wp_style_set_manager->add_set($handle, $set);
+
+    if (!empty($args['units'])) {
+        foreach($args['units'] as $handle => $unit) {
+            wp_add_style_to_set($handle, $set->handle, $unit);
+        }
     }
-    <?php
+    return $set;
 }
 
-function test_return_array_css() {
-    return array(
-        'body' => array(
-            'background' => 'blue',
-            'color' => 'white'
-        )
-    );
+function wp_enqueue_style_set($handle, $args = array()) {
+    global $wp_style_set_manager;
+    if (empty($args)) {
+
+        // Check if set is already registered
+        $set = $wp_style_set_manager->get_set($handle);
+        if (isset($set)) {
+            $set->is_enqueued = true;
+        }
+    } else {
+        // not yet registered
+        $set = wp_register_style_set($handle, $args);
+        $set->is_enqueued = true;
+    }
+    return $set;
 }
 
-add_action('wp_stylesets/register', function($manager) {
+function wp_add_style_to_set($handle, $set_handle, $args = array()) {
+    global $wp_style_set_manager;
 
-    /*
-    Style Set
-    - handle: basset-content
-    - name: Basset Content
-    - type is inferred from units
-    - units: array of unitsn
-    - vars: default vars it pass to each compile cycle. These are overridden by unit vars of same name.
-    - functions: array of PHP functions to register to the compilers.
-    - import_dirs: array of paths to look for files to import. Default to active theme root.
-    - contributor: array('handle' => 'basset', 'type' => 'theme') - assume plugin, maybe go look for the handle in dirs.
+    $set = $wp_style_set_manager->get_set($set_handle);
+    if ($set) {
+        $unit = new WP_StyleUnit($args);
+        $unit->handle = $handle;
+        $set->add_unit($unit);
+    }
+    return $unit;
+}
 
-    */
-    $set = $manager->register_set('my-first-styleset', array(
-        'name' => 'My First Styleset',
-        'vars' => array(
-            'main_color' => 'blue'
+add_action('wp_enqueue_scripts', function() {
+
+    // wp_register_style( $handle, $src, $deps = array(), $ver = false, $media = 'all' );
+    //  wp_enqueue_style( $handle, $src = false, $deps = array(), $ver = false, $media = 'all' );
+
+    wp_enqueue_style_set("basset-content-set", array(
+        'name' => 'Basset Content Styles',
+        'units' => array(
+            'basset-vars' => array(
+                'name' => 'Basset Variables',
+                'lang' => 'css',
+                'source' => 'my_test_function'
+            ),
+            'basset-tests' => array(
+                'name' => 'Basset Variables',
+                'lang' => 'css',
+                'source' => function() {
+                    return "body { background:#333; } p {text-align:center;}";
+                }
+            ),
+            'test-file' => array(
+                'name' => 'Test File',
+                'lang' => 'css',
+                'source' => __DIR__ . '/test-files/test.css'
+            )
         ),
-        'contributor' => array('handle' => 'wp-style-sets'),
-        'render_as' => 'file'
+        'vars' => array(
+            'primary_color' => 'white',
+            'primary_background_color' => 'navy'
+        )
     ));
 
-    print_r($set);
-
 });
 
-add_filter('the_content', function($content) {
-    global $wp_style_set_manager;
+function my_test_function() {
     ob_start();
-
-    $set = $wp_style_set_manager->get_set('my-first-set');
-    print_r($set);
-
-    $content = ob_get_clean();
-    return $content;
-});
-
+    ?>
+    main {
+        color:red;
+        background:yellow;
+        font-style:italic;
+    }
+    <?
+    return ob_get_clean();
+}
 ?>

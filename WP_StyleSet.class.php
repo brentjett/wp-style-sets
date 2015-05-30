@@ -85,6 +85,7 @@ class WP_StyleSet {
             require_once( __DIR__ . '/vendor/leafo/lessphp/lessc.inc.php' );
         }
         $less = new lessc();
+        $less->setVariables($vars);
         return $less->compile($raw_css);
     }
 

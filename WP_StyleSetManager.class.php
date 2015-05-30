@@ -43,6 +43,8 @@ class WP_StyleSetManager {
     public function print_styles() {
         global $wp_style_set_manager;
 
+        // @TODO: check cache before recompiling
+
         $sets = $wp_style_set_manager->sets;
         foreach($sets as $set) {
             if ($set->is_enqueued && ($set->render_as == 'embed')) {

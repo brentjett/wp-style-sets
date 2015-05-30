@@ -56,15 +56,7 @@ class WP_StyleSet {
             foreach($this->units as $handle => $unit) {
 
                 $lang = $unit->lang;
-                if (is_callable($unit->source)) {
-                    $css .= call_user_func($unit->source);
-                } else {
-                    if (file_exists($unit->source)) {
-                        $css .= file_get_contents($unit->source);
-                    }
-                }
-
-                //$css .= apply_filters("wp_stylesets/compile/{$lang}", $unit, $set_vars );
+                $css .= apply_filters("wp_stylesets/compile/{$lang}", $unit, $set_vars );
             }
         }
         return $css;
@@ -80,9 +72,18 @@ class WP_StyleSet {
     }
 
     public function compile_css_unit($unit, $set_vars) {
-        if (is_callable($unit->source())) {
-            return call_user_func($unit->source());
+
+        $css = "\n\n/* Style Unit: $unit->handle/$unit->name */\n";
+        
+        if (is_callable($unit->source)) {
+            $css .= call_user_func($unit->source);
+        } else {
+            if (file_exists($unit->source)) {
+
+                $css .= file_get_contents($unit->source);
+            }
         }
+        return $css;
     }
 
     public function compile_less_unit($unit, $set_vars) {

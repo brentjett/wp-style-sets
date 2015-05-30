@@ -23,7 +23,7 @@ add_action('wp_enqueue_scripts', function() {
             'test-file' => array(
                 'name' => 'Test File',
                 'lang' => 'css',
-                'source' => __DIR__ . '/test-files/test.css'
+                'source' => __DIR__ . '/test-static.less'
             )
         ),
         'vars' => array(

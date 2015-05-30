@@ -1,26 +1,18 @@
 <?php
-// Load LESS Compiler
-if ( file_exists( __DIR__ . '/vendor/leafo/lessphp/lessc.inc.php' ) ) {
-    require_once( __DIR__ . '/vendor/leafo/lessphp/lessc.inc.php' );
-}
-// Load SASS Compiler
-if ( file_exists( __DIR__ . '/vendor/leafo/scss/scss.inc.php' ) ) {
-    require_once( __DIR__ . '/vendor/leafo/scss/scss.inc.php' );
-}
 
 require_once 'WP_StyleSet.class.php';
 require_once 'WP_StyleUnit.class.php';
 
 class WP_StyleSetManager {
 
-    public $sets = array();
+    private $sets = array();
     public $units = array();
 
     function __construct() {
-
+        add_action('wp_print_styles', array($this, 'print_styles'));
     }
 
-    public function get_style_sets() {
+    public function sets() {
         return apply_filters('wp_stylesets/pre_get', $this->style_sets);
     }
 
@@ -47,11 +39,18 @@ class WP_StyleSetManager {
         return $this->sets[$handle];
     }
 
-    // add item to set
-    public function register_unit($unit, $set) {
-        global $wp_style_sets;
+    // Print enqueued <style> blocks on wp_print_styles
+    public function print_styles() {
+        global $wp_style_set_manager;
 
-        $wp_style_sets[$set] = $unit;
+        $sets = $wp_style_set_manager->sets;
+        foreach($sets as $set) {
+            if ($set->is_enqueued && ($set->render_as == 'embed')) {
+                if ($css = $set->render()) {
+                    print "Render Set: $set->name \n\n<style id='$set->handle'>$css</style>\n\n";
+                }
+            }
+        }
     }
 }
 

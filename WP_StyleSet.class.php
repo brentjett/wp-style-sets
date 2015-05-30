@@ -1,7 +1,8 @@
 <?php
+
+
 class WP_StyleSet {
 
-    //public $manager; // Not sure why I need it after all
     public $handle = '';
     private $name = '';
     public $units = array();
@@ -20,18 +21,9 @@ class WP_StyleSet {
         if (isset($args['is_editor_style'])) $this->is_editor_style = $args['is_editor_style'];
         if (isset($args['render_as'])) $this->render_as = $args['render_as'];
 
-        /*
-        if (isset($args['manager']) {
-            $this->manager = $args['manager'];
-        } else {
-            global $wp_style_set_manager;
-            $this->manager = $wp_style_set_manager;
-        }
-        */
-
-        add_filter('wp_stylesets/compile/css', array($this, 'compile_css_unit'), 10, 2);
-        add_filter('wp_stylesets/compile/less', array($this, 'compile_less_unit'), 10, 2);
-
+        add_filter('wp_stylesets/compile/css', array($this, 'compile_css_unit'), 10, 3);
+        add_filter('wp_stylesets/compile/less', array($this, 'compile_less_unit'), 10, 3);
+        add_filter('wp_stylesets/compile/scss', array($this, 'compile_scss_unit'), 10, 3);
     }
 
     public function __get($name) {
@@ -47,47 +39,61 @@ class WP_StyleSet {
         }
     }
 
-    public function render() {
-
-        $css = '';
-        $set_vars = $this->vars();
-
-        if (!empty($this->units)) {
-            foreach($this->units as $handle => $unit) {
-
-                $lang = $unit->lang;
-                $css .= apply_filters("wp_stylesets/compile/{$lang}", $unit, $set_vars );
-            }
-        }
-        return $css;
-    }
-
-    // Get any compile variables specified on the set
-    public function vars() {
-        return apply_filters('wp_stylesets/set_vars', $this->vars, $this);
-    }
-
     public function add_unit($unit) {
         $this->units[] = $unit;
     }
 
-    public function compile_css_unit($unit, $set_vars) {
+    public function render() {
 
-        $css = "\n\n/* Style Unit: $unit->handle/$unit->name */\n";
+        $set_vars = $this->vars;
+        $css = '';
 
-        if (is_callable($unit->source)) {
-            $css .= call_user_func($unit->source);
-        } else {
-            if (file_exists($unit->source)) {
-                $css .= file_get_contents($unit->source);
+        if (!empty($this->units)) {
+            foreach($this->units as $handle => $unit) {
+
+                $unit->raw_css = "\n\n/* Style Unit: $unit->handle/$unit->name */\n";
+
+                // Get Source Text
+                if (is_callable($unit->source)) {
+                    $unit->raw_css .= call_user_func($unit->source);
+                } else {
+                    if (file_exists($unit->source)) {
+                        $unit->raw_css .= file_get_contents($unit->source);
+                    }
+                }
+
+                // Compile
+                $lang = $unit->lang;
+                $unit->compiled_css .= apply_filters("wp_stylesets/compile/{$lang}", $unit->raw_css, $unit, $set_vars );
+                $css .= $unit->compiled_css;
             }
         }
         return $css;
     }
 
-    public function compile_less_unit($unit, $set_vars) {
-        $css = $unit->source() . "\n";
-        return $css;
+
+
+
+    public function compile_css_unit($raw_css, $unit, $set_vars) {
+        return $raw_css;
+    }
+
+    public function compile_less_unit($raw_css, $unit, $set_vars) {
+        // Load LESS Compiler
+        if ( file_exists( __DIR__ . '/vendor/leafo/lessphp/lessc.inc.php' ) ) {
+            require_once( __DIR__ . '/vendor/leafo/lessphp/lessc.inc.php' );
+        }
+        $less = new lessc();
+        return $less->compile($raw_css);
+    }
+
+    public function compile_scss_unit($raw_css, $unit, $set_vars) {
+        // Load SASS Compiler
+        if ( file_exists( __DIR__ . '/vendor/leafo/scssphp/scss.inc.php' ) ) {
+            require_once( __DIR__ . '/vendor/leafo/scssphp/scss.inc.php' );
+        }
+        $scss = new scssc();
+        return $scss->compile($raw_css);
     }
 
 }

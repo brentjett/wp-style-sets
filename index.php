@@ -19,26 +19,6 @@ add_action('init', function() {
     }
 });
 
-// Print enqueued <style> blocks
-add_action('wp_print_styles', function() {
-    global $wp_style_set_manager;
-
-    $sets = $wp_style_set_manager->sets;
-    foreach($sets as $set) {
-        if ($set->is_enqueued && ($set->render_as == 'embed')) {
-            if ($css = $set->render()) {
-                print "\n\n<style id='$set->handle'>\n$css\n</style>\n\n";
-            }
-        }
-    }
-}, 100);
-
-// On wp_head - render sets that are <style> block sets and are enqueued
-// On wp_enqueue_scripts - render sets that are files and are enqueued
-// On wp_print_styles - render sets that are embed <style> blocks that are enqueued
-// on mc_css - render sets that are marked for editor include
-// admin_enqueue_scripts support?
-
 
 
 function wp_register_style_set($handle, $args = array()) {

@@ -1,0 +1,9 @@
+$font-stack:    Helvetica, sans-serif;
+$primary-color: yellow;
+$background: teal;
+
+#sidebar {
+  font: 100% $font-stack;
+  color: $primary-color;
+  background: $background;
+}

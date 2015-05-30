@@ -14,17 +14,22 @@ add_action('wp_enqueue_scripts', function() {
                 'source' => 'my_test_function'
             ),
             'basset-tests' => array(
-                'name' => 'Basset Variables',
+                'name' => 'Basset Tests',
                 'lang' => 'css',
                 'source' => function() {
-                    return "body { background:#333; } p {text-align:center;}";
+                    return "body .page { background:#333; color:white; } p {text-align:center;}";
                 }
             ),
-            'test-file' => array(
-                'name' => 'Test File',
-                'lang' => 'css',
+            'test-less-file' => array(
+                'name' => 'Test Less File',
+                'lang' => 'less',
                 'source' => __DIR__ . '/test-static.less'
-            )
+            ),
+            'test-scss-file' => array(
+                'name' => 'Test SCSS File',
+                'lang' => 'scss',
+                'source' => __DIR__ . '/test-scss.scss'
+            ),
         ),
         'vars' => array(
             'primary_color' => 'white',
@@ -37,11 +42,7 @@ add_action('wp_enqueue_scripts', function() {
 function my_test_function() {
     ob_start();
     ?>
-    main {
-        color:red;
-        background:yellow;
-        font-style:italic;
-    }
+    main { /* empty - from my_test_function() */ }
     <?
     return ob_get_clean();
 }

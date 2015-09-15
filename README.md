@@ -1,4 +1,4 @@
-# WP Style Sets API
+# WP Style Sets API - NOT UNDER ACTIVE DEVELOPMENT
 
 A concept plugin for creating a set of styles to be compiled and output as either a file or style block.
 
